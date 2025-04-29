@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
+from scipy.optimize import curve_fit
 
-# данные в формате (x,y)
+# Исходные данные
 data = [
     (623.4, 2731), 
     (612.3, 2500.3),
@@ -18,61 +18,38 @@ data = [
     (404.7, 469),
 ]
 
-# преобразуем данные в numpy массивы
+# Преобразуем данные в массивы NumPy
 x_data = np.array([point[0] for point in data])
 y_data = np.array([point[1] for point in data])
 
-# создаем интерполяционную функцию
-interp_func = interp1d(x_data, y_data, kind='cubic', fill_value="extrapolate")
-
-# задаем значения y для которых нужно найти x
+# Заданные значения y для поиска x
 y_values_to_find = [754, 866.3, 973, 1470.6, 2022.6, 2064, 2322, 2558, 2826]
 
-# находим соответствующие x для указанных y
-x_found = []
+# Определение линейной функции для аппроксимации
+def linear_func(x, k, b):
+    return k * x + b
 
-# генерируем x-значения для интерполяции
-x_candidates = np.linspace(min(x_data), max(x_data), 1000)
-y_candidates = interp_func(x_candidates)
+# Аппроксимация данных
+params, _ = curve_fit(linear_func, x_data, y_data)
+k_fit, b_fit = params
 
-# для каждого y находим соответствующее x
-for y in y_values_to_find:
-    # находим ближайший x для каждого y
-    closest_x = x_candidates[np.abs(y_candidates - y).argmin()]
-    x_found.append(closest_x)
+# Вычисление x для заданных y
+y_values = np.array(y_values_to_find)
+x_values = (y_values - b_fit) / k_fit
 
-# выводим найденные значения x
-for y, x in zip(y_values_to_find, x_found):
-    print(f"Для y = {y} найдено x ≈ {x:.2f}")
+# Вывод результатов
+print("Аппроксимирующая прямая: y = {:.2f}x + {:.2f}".format(k_fit, b_fit))
+print("\nНайденные значения x для заданных y:")
+for y, x in zip(y_values_to_find, x_values):
+    print(f"y = {y}\t→ x = {x:.2f}")
 
-# построение графиков
-plt.figure(figsize=(12, 10))
-
-# график исходных данных
-plt.subplot(2, 1, 1)
-plt.scatter(y_data, x_data, color='red', label='Исходные точки')
-plt.plot(interp_func(x_candidates), x_candidates, 'g--', label='Интерполяция')
-plt.title('Исходные данные')
-plt.xlabel('< ϕ 3>, °')
-plt.ylabel('Длина волны')
-plt.grid()
-plt.legend()
-
-# график с интерполяцией и определяемыми точками
-plt.subplot(2, 1, 2)
-plt.scatter(y_data, x_data, color='red', label='Исходные точки')
-plt.scatter(y_values_to_find, x_found, color='black', label='Определяемые точки')
-plt.plot(interp_func(x_candidates), x_candidates, 'g--', label='Интерполяция')
-
-# добавление вертикальных линий для каждого y
-for y in y_values_to_find:
-    plt.axvline(x=y, color='orange', linestyle='--', linewidth=0.8)
-
+# Построение графика
+plt.scatter(x_data, y_data, label='Исходные данные')
+plt.plot(x_data, linear_func(x_data, k_fit, b_fit), 'r-', label='Аппроксимирующая прямая')
+plt.scatter(x_values, y_values, color='green', zorder=5, label='Найденные точки')
 plt.title('График с интерполяцией и определяемыми точками')
-plt.xlabel('< ϕ 3>, °')
+plt.xlabel('< ϕ >, °')
 plt.ylabel('Длина волны')
 plt.legend()
-plt.grid()
-
-plt.tight_layout()
+plt.grid(True)
 plt.show()
