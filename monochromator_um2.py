@@ -45,16 +45,16 @@ for y_val in y_values_to_find:
     results[y_val] = x_val
 
 # Визуализация
-plt.scatter(x, y, label='Исходные данные', color='blue')
+plt.scatter( y,x, label='Исходные данные', color='blue')
 x_fit = np.linspace(x_min, x_max, 500)
-plt.plot(x_fit, poly(x_fit), label='Аппроксимация', color='red')
+plt.plot( poly(x_fit),x_fit, label='Аппроксимация', color='red')
 
 # Отметить найденные точки
 for y_val, x_val in results.items():
     if (y_val==754):
-        plt.scatter(x_val, y_val,label='Найденные точки', color='green', zorder=5)
+        plt.scatter( y_val,x_val,label='Найденные точки', color='green', zorder=5)
     else:
-        plt.scatter(x_val, y_val, color='green', zorder=5)
+        plt.scatter( y_val,x_val, color='green', zorder=5)
 
         # plt.text(x_val, y_val, f'({x_val:.1f}, {y_val})', fontsize=8)
 
